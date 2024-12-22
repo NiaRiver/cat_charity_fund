@@ -1,3 +1,5 @@
+from datetime import datetime as dt
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,6 +57,7 @@ async def create_donation(
 ):
     donation_obj = await invest(obj_in, session=session)
     donation_obj.user_id = user.id
+    donation_obj.create_date = dt.now()
     await session.commit()
     await session.refresh(donation_obj)
 

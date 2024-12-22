@@ -33,6 +33,7 @@ async def create_new_charity_project(
 ):
     await check_charity_name_is_unique(charity_project.name, session)
     charity_obj = await invest(charity_project, session=session)
+    charity_obj.create_date = dt.now()
     await session.commit()
     await session.refresh(charity_obj)
     return charity_obj
