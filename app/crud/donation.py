@@ -1,6 +1,5 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CharityDonationCRUDBase
 from app.models import Donation, CharityProject

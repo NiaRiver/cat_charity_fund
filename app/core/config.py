@@ -1,7 +1,5 @@
-# core/config.py
 from typing import Optional
 
-from pydantic import BaseSettings
 from pydantic import BaseSettings, EmailStr
 
 

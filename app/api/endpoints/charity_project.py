@@ -1,14 +1,14 @@
-# app/api/meeting_room.py
 from datetime import datetime as dt
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import (
-    check_charity_project_exists,
+    check_charity_is_open,
+    check_charity_name_is_unique,
     check_charity_new_ammout_ge_invested,
     check_project_not_invested_yet,
-    check_charity_name_is_unique,
-    check_charity_is_open
+    check_charity_project_exists
 )
 from app.core.db import get_async_session
 from app.core.user import current_superuser

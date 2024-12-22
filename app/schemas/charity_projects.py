@@ -1,4 +1,3 @@
-# app/schemas/meeting_room.py
 from datetime import datetime as dt
 from typing import Optional
 

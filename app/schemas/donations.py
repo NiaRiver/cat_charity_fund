@@ -1,4 +1,3 @@
-# app/schemas/meeting_room.py
 from datetime import datetime as dt
 from typing import Optional
 
@@ -16,17 +15,6 @@ class DonationCreate(DonationBase):
 
 class DonationUpdate(DonationCreate):
     pass
-
-    # @validator("name")
-    # def validate_name_is_not_none(cls, value):
-    #     if value is None:
-    #         # При ошибке валидации можно выбросить
-    #         # ValueError, TypeError или AssertionError.
-    #         # В нашем случае подходит ValueError.
-    #         # В аргумент передаём сообщение об ошибке.
-    #         raise ValueError("Имя переговорки не может быть пустым!")
-    #     # Если проверка пройдена, возвращаем значение поля.
-    #     return value
 
 
 class DonationRepresintation(DonationBase):

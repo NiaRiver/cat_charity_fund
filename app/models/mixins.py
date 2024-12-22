@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, CheckConstraint, DateTime, Integer, Boolean, func
+    Boolean, Column, CheckConstraint, DateTime, Integer, func
 )
 
 
