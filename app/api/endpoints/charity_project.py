@@ -12,7 +12,7 @@ from app.api.validators import (
 )
 from app.core.db import get_async_session
 from app.core.user import current_superuser
-from app.crud.charity_project import charity_projects_crud
+from app.crud import charity_projects_crud, dontions_crud
 from app.schemas.charity_projects import (
     CharityRepresintation, CharityCreate, CharityUpdate
 )
@@ -32,8 +32,14 @@ async def create_new_charity_project(
     session: AsyncSession = Depends(get_async_session)
 ):
     await check_charity_name_is_unique(charity_project.name, session)
-    charity_obj = await invest(charity_project, session=session)
-    charity_obj.create_date = dt.now()
+    charity_obj = await charity_projects_crud.create(
+        charity_project, to_commit=False, session=session
+    )
+    open_donations = await dontions_crud.get_open_donations(session)
+    charity_obj, updated_donations = invest(charity_obj, open_donations)
+    session.add(charity_obj)
+    for donation in updated_donations:
+        session.add(donation)
     await session.commit()
     await session.refresh(charity_obj)
     return charity_obj
@@ -61,12 +67,12 @@ async def partialy_update_charity_project(
     session: AsyncSession = Depends(get_async_session)
 ):
     charity_project = await check_charity_project_exists(charity_id, session)
-    await check_charity_is_open(charity_project)
+    check_charity_is_open(charity_project)
     if obj_in.name is not None:
         await check_charity_name_is_unique(obj_in.name, session)
 
     if obj_in.full_amount is not None:
-        await check_charity_new_ammout_ge_invested(
+        check_charity_new_ammout_ge_invested(
             charity_project,
             obj_in.full_amount
         )
@@ -76,8 +82,6 @@ async def partialy_update_charity_project(
     charity_project = await charity_projects_crud.update(
         charity_project, obj_in, session
     )
-    await session.commit()
-    await session.refresh(charity_project)
     return charity_project
 
 

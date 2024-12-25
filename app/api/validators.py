@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.crud import charity_projects_crud
 from app.models import CharityProject
 
@@ -14,7 +15,7 @@ async def check_charity_project_exists(
     )
     if charity is None:
         raise HTTPException(
-            status_code=422,
+            status_code=settings.VALIDATION_ERROR,
             detail='Сбор не найден!'
         )
     return charity
@@ -29,32 +30,32 @@ async def check_charity_name_is_unique(
     )
     if charity is not None:
         raise HTTPException(
-            status_code=400,
+            status_code=settings.BAD_REQUEST_ERROR,
             detail=(
                 'Проект с таким именем уже существует!'
             )
         )
 
 
-async def check_charity_is_open(
+def check_charity_is_open(
         charity_obj
 ) -> CharityProject:
-    if charity_obj.fully_invested is True:
+    if charity_obj.fully_invested:
         raise HTTPException(
-            status_code=400,
+            status_code=settings.BAD_REQUEST_ERROR,
             detail=(
                 'Закрытый проект нельзя редактировать!'
             )
         )
 
 
-async def check_charity_new_ammout_ge_invested(
+def check_charity_new_ammout_ge_invested(
         charity_obj,
         new_amount: int,
 ) -> CharityProject:
     if charity_obj.invested_amount > new_amount:
         raise HTTPException(
-            status_code=400,
+            status_code=settings.BAD_REQUEST_ERROR,
             detail=(
                 'Нелья установить значение ' +
                 'full_amount меньше уже вложенной суммы.'
@@ -71,7 +72,7 @@ async def check_project_not_invested_yet(
     )
     if charity.invested_amount > 0:
         raise HTTPException(
-            status_code=400,
+            status_code=settings.BAD_REQUEST_ERROR,
             detail=(
                 'Нелья установить значение ' +
                 'full_amount меньше уже вложенной суммы.'

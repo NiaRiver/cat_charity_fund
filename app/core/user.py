@@ -46,7 +46,7 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     ):
         if len(password) < 3:
             raise InvalidPasswordException(
-                reason='Passord should be at least 3 chars long.'
+                reason="Passord should be at least 3 chars long."
             )
         if user.email in password:
             raise InvalidPasswordException(

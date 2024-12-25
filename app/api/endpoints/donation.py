@@ -1,11 +1,9 @@
-from datetime import datetime as dt
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_async_session
 from app.core.user import current_user, current_superuser
-from app.crud.donation import dontions_crud
+from app.crud import charity_projects_crud, dontions_crud
 from app.models.user import User
 from app.schemas.donations import (
     DonationCreate, DonationRepresintation, SUDonationRepresintation
@@ -51,14 +49,22 @@ async def get_all_donations(
     dependencies=[Depends(current_user)]
 )
 async def create_donation(
-    obj_in: DonationCreate,
+    donation: DonationCreate,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_user)
 ):
-    donation_obj = await invest(obj_in, session=session)
-    donation_obj.user_id = user.id
-    donation_obj.create_date = dt.now()
+    donation_obj = await dontions_crud.create(
+        donation, user, to_commit=False, session=session
+    )
+    open_charity_projects = await charity_projects_crud.get_open_projects(
+        session
+    )
+    donation_obj, updated_charities = invest(
+        donation_obj, open_charity_projects
+    )
+    session.add(donation_obj)
+    for donation in updated_charities:
+        session.add(donation)
     await session.commit()
     await session.refresh(donation_obj)
-
     return donation_obj

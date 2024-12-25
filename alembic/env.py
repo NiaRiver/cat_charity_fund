@@ -8,7 +8,8 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
-from app.core.db import Base
+from app.core.base import Base
+# from app.models import CharityProject, Donation, User # noqa
 
 load_dotenv('.env')
 # this is the Alembic Config object, which provides

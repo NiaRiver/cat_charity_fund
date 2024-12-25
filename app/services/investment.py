@@ -1,39 +1,70 @@
 from datetime import datetime as dt
 from typing import Union
 
-from app.crud import dontions_crud, charity_projects_crud
-from app.schemas import CharityBase, DonationBase
-
-CRUD_DICT = {
-    True: charity_projects_crud,
-    False: dontions_crud
-}
+from app.models import CharityProject, Donation
 
 
-async def invest(
-        obj_in: Union[CharityBase, DonationBase],
-        *,
-        db_obj=None,
-        session
-):
-    obj_schema = isinstance(obj_in, CharityBase)
-    obj_in_crud = CRUD_DICT[obj_schema]
-    investing_crud = CRUD_DICT[not obj_schema]
-    time = dt.now()
-    investing_uninvested = await investing_crud.get_rest_uninvested(session)
-    obj_in_data = obj_in.dict(exclude_unset=True)
-    if investing_uninvested > 0:
-        remaining_amount = investing_uninvested - obj_in.full_amount
-        obj_in_data["fully_invested"] = remaining_amount >= 0
-        obj_in_data["invested_amount"] = (
-            obj_in_data["full_amount"] if obj_in_data["fully_invested"] else
-            investing_uninvested
+def invest(
+        target: Union[CharityProject, Donation],
+        sources: list[Union[CharityProject, Donation]]
+) -> tuple[
+    Union[CharityProject, Donation], list[Union[CharityProject, Donation]]
+]:
+    results_data = []
+    income_amount = target.full_amount
+    close_date = dt.now()
+    if sources:
+        first_source = sources.pop(0)
+        remaining_full = [source.full_amount for source in sources]
+        remaining_sum = sum(remaining_full)
+        first_remaining = (
+            first_source.full_amount - first_source.invested_amount
         )
-        obj_in_data["close_date"] = (
-            time if obj_in_data["fully_invested"] else None
-        )
-        await investing_crud.add_new_value(obj_in.full_amount, session)
+        if income_amount < first_remaining:
+            first_source.invested_amount += income_amount
+            target.invested_amount = target.full_amount
+            target.fully_invested = True
+            target.close_date = close_date
+            return target, [first_source]
+        first_source.invested_amount = first_source.full_amount
+        first_source.fully_invested = True
+        first_source.close_date = close_date
+        target.invested_amount = first_remaining
+        income_remaining = income_amount - first_remaining
+        if income_remaining >= remaining_sum:
+            for source in sources:
+                source.invested_amount += source.full_amount
+                source.fully_invested = True
+                results_data.append(source)
+            target.invested_amount += remaining_sum
+            target.fully_invested = (
+                target.invested_amount == target.full_amount
+            )
+            if target.fully_invested:
+                target.close_date = close_date
+            results_data.append(first_source)
+            return target, results_data
 
-    db_obj = obj_in_crud.model(**obj_in_data)
-    session.add(db_obj)
-    return db_obj
+        for index, full in enumerate(remaining_full):
+            if full <= income_remaining:
+                target.invested_amount += full
+                sources[index].invested_amount = full
+                sources[index].fully_invested = True
+                sources[index].close_date = close_date
+                results_data.append(sources[index])
+                income_remaining -= full
+                target.fully_invested = (
+                    target.invested_amount == target.full_amount
+                )
+                if target.fully_invested:
+                    target.close_date = close_date
+                    break
+                continue
+            sources[index].invested_amount = income_remaining
+            results_data.append(sources[index])
+            target.invested_amount = target.full_amount
+            target.fully_invested = True
+            target.close_date = close_date
+            break
+        results_data.append(first_source)
+    return target, results_data
