@@ -1,7 +1,6 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.crud import charity_projects_crud
 from app.models import CharityProject
 
@@ -15,7 +14,7 @@ async def check_charity_project_exists(
     )
     if charity is None:
         raise HTTPException(
-            status_code=settings.VALIDATION_ERROR,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail='Сбор не найден!'
         )
     return charity
@@ -30,7 +29,7 @@ async def check_charity_name_is_unique(
     )
     if charity is not None:
         raise HTTPException(
-            status_code=settings.BAD_REQUEST_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
                 'Проект с таким именем уже существует!'
             )
@@ -42,7 +41,7 @@ def check_charity_is_open(
 ) -> CharityProject:
     if charity_obj.fully_invested:
         raise HTTPException(
-            status_code=settings.BAD_REQUEST_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
                 'Закрытый проект нельзя редактировать!'
             )
@@ -55,9 +54,9 @@ def check_charity_new_ammout_ge_invested(
 ) -> CharityProject:
     if charity_obj.invested_amount > new_amount:
         raise HTTPException(
-            status_code=settings.BAD_REQUEST_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
-                'Нелья установить значение ' +
+                'Нелья установить значение '
                 'full_amount меньше уже вложенной суммы.'
             )
         )
@@ -72,9 +71,9 @@ async def check_project_not_invested_yet(
     )
     if charity.invested_amount > 0:
         raise HTTPException(
-            status_code=settings.BAD_REQUEST_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
-                'Нелья установить значение ' +
+                'Нелья установить значение '
                 'full_amount меньше уже вложенной суммы.'
             )
         )

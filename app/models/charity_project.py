@@ -9,5 +9,5 @@ class CharityProject(Base, CharityDonationBase):
     description = Column(Text, nullable=False)
 
     def __repr__(self):
-        return (f"{super().__repr__()}\n" +
-                f"Name: {self.name}, Description{self.description}")
+        return (f"{super().__repr__()}"
+                f"{self.name=}, {self.description=}")

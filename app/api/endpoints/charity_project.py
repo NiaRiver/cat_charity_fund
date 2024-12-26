@@ -28,21 +28,23 @@ router = APIRouter()
     dependencies=[Depends(current_superuser)]
 )
 async def create_new_charity_project(
-    charity_project: CharityCreate,
+    charity_project_obj: CharityCreate,
     session: AsyncSession = Depends(get_async_session)
 ):
-    await check_charity_name_is_unique(charity_project.name, session)
-    charity_obj = await charity_projects_crud.create(
-        charity_project, to_commit=False, session=session
+    await check_charity_name_is_unique(charity_project_obj.name, session)
+    charity_project_obj = await charity_projects_crud.create(
+        charity_project_obj, False, session=session
     )
-    open_donations = await dontions_crud.get_open_donations(session)
-    charity_obj, updated_donations = invest(charity_obj, open_donations)
-    session.add(charity_obj)
-    for donation in updated_donations:
-        session.add(donation)
+    open_donations = await dontions_crud.get_all_open(session)
+    updated_donations = invest(
+        charity_project_obj, open_donations
+    )
+    session.add_all(updated_donations)
+    # for donation in updated_donations:
+    #     session.add(donation)
     await session.commit()
-    await session.refresh(charity_obj)
-    return charity_obj
+    await session.refresh(charity_project_obj)
+    return charity_project_obj
 
 
 @router.get(

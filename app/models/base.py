@@ -1,3 +1,5 @@
+from datetime import datetime as dt
+
 from sqlalchemy import (
     Boolean, Column, CheckConstraint, DateTime, Integer, func
 )
@@ -16,17 +18,19 @@ class CharityDonationBase:
             name="check_full_amount_gt_0_field"
         ),
         CheckConstraint(
-            "invested_amount >= 0",
+            "full_amount >= invested_amount >= 0",
             name="check_invested_amount_ge_0_field"
-        ), CheckConstraint(
-            "invested_amount <= full_amount",
-            name="check_invested_amount_le_full_amount"
         )
     )
 
     def __repr__(self):
-        return (f"{type(self).__name__}, full amount: {self.full_amount}, " +
-                f"Invested amount: {self.invested_amount}, " +
-                f"Create date: {self.create_date}, " +
-                f"Close date: {self.close_date}, " +
-                f"Is open: {not self.fully_invested}")
+        return (f"{type(self).__name__}, full amount: {self.full_amount}, "
+                f"{self.invested_amount=}, "
+                f"{self.create_date=}, "
+                f"{self.close_date=}, "
+                f"{self.fully_invested=},")
+
+    def close(self):
+        self.close_date = dt.now()
+        self.invested_amount = self.full_amount
+        self.fully_invested = True

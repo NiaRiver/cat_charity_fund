@@ -1,6 +1,10 @@
+from datetime import datetime as dt
+
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import User
 
 
 class CRUDBase:
@@ -19,19 +23,33 @@ class CRUDBase:
 
     async def create(
         self,
-        obj_in, *,
+        obj_in, /,
         to_commit: bool = True,
+        user: User = None,
+        *,
         session: AsyncSession
     ):
         obj_in_data = obj_in.dict()
+        obj_in_data["create_date"] = dt.now()
+        if user:
+            obj_in_data["user_id"] = user.id
         db_obj = self.model(**obj_in_data)
+        session.add(db_obj)
         if to_commit:
-            session.add(db_obj)
             await session.commit()
             await session.refresh(db_obj)
         return db_obj
 
     async def get_all(
+        self,
+        session: AsyncSession
+    ):
+        db_objs = await session.scalars(
+            select(self.model)
+        )
+        return db_objs.all()
+
+    async def get_all_open(
         self,
         session: AsyncSession
     ):

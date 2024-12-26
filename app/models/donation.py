@@ -9,4 +9,4 @@ class Donation(Base, CharityDonationBase):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
-        return f"{super().__repr__()} \nComment: {self.comment}"
+        return f"{super().__repr__()} {self.comment=}"

@@ -42,7 +42,8 @@ The QRKot Foundation collects donations for various targeted projects aimed at s
 
 1. Clone the repository:
 ```bash
-git clone git@github.com:your-username/cat_charity_fund.git
+git clone git@github.com:NiaRiver/cat_charity_fund.git && \
+cd cat_charity_fund
 ```
 
 2. Create and activate virtual environment:
@@ -65,14 +66,19 @@ SECRET=your_secret_key
 
 ## Running the Application
 
-1. Start the server:
+1. Getting db ready:
+```bash
+alembic upgrade head
+```
+
+2. Start the server:
 ```bash
 uvicorn app.main:app --reload
 ```
 
-2. Access the API documentation:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+3. Access the API documentation:
+- [Swagger UI Documentation](http://localhost:8000/docs)
+- [ReDoc Documentation](http://localhost:8000/redoc)
 
 ## Project Structure
 
@@ -108,10 +114,10 @@ app/
 - `POST /auth/register` - Register new user
 - `GET /users/me` - Get current user info
 
-## Author  
+## Author
 
 ### NIA River
 
 - **Contact the creator**
-  - Email: <nianate@yandex.ru>
+  - Email: [nianate@yandex.ru](mailto:nianate@yandex.ru)
   - GitHub: github.com/NiaRiver/
