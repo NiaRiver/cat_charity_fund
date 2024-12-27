@@ -27,7 +27,7 @@ async def check_charity_name_is_unique(
     charity = await charity_projects_crud.get_charity_project_by_name(
         project_name, session
     )
-    if charity is not None:
+    if charity.first() is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(

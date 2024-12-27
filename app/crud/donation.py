@@ -11,10 +11,9 @@ class CRUDDonation(CRUDBase):
         user_id: int,
         session: AsyncSession,
     ):
-        donations = await session.scalars(
+        return await session.scalars(
             select(self.model).where(self.model.user_id == user_id)
         )
-        return donations.all()
 
 
 dontions_crud = CRUDDonation(Donation)

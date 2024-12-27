@@ -32,19 +32,18 @@ async def create_new_charity_project(
     session: AsyncSession = Depends(get_async_session)
 ):
     await check_charity_name_is_unique(charity_project_obj.name, session)
-    charity_project_obj = await charity_projects_crud.create(
+    project = await charity_projects_crud.create(
         charity_project_obj, False, session=session
     )
-    open_donations = await dontions_crud.get_all_open(session)
-    updated_donations = invest(
-        charity_project_obj, open_donations
+    session.add_all(
+        invest(
+            project,
+            await dontions_crud.get_all_open(session)
+        )
     )
-    session.add_all(updated_donations)
-    # for donation in updated_donations:
-    #     session.add(donation)
     await session.commit()
-    await session.refresh(charity_project_obj)
-    return charity_project_obj
+    await session.refresh(project)
+    return project
 
 
 @router.get(
@@ -68,23 +67,23 @@ async def partialy_update_charity_project(
     obj_in: CharityUpdate,
     session: AsyncSession = Depends(get_async_session)
 ):
-    charity_project = await check_charity_project_exists(charity_id, session)
-    check_charity_is_open(charity_project)
+    project = await check_charity_project_exists(charity_id, session)
+    check_charity_is_open(project)
     if obj_in.name is not None:
         await check_charity_name_is_unique(obj_in.name, session)
 
     if obj_in.full_amount is not None:
         check_charity_new_ammout_ge_invested(
-            charity_project,
+            project,
             obj_in.full_amount
         )
-    if obj_in.full_amount == charity_project.invested_amount:
-        charity_project.fully_invested = True
-        charity_project.close_date = dt.now()
-    charity_project = await charity_projects_crud.update(
-        charity_project, obj_in, session
+    if obj_in.full_amount == project.invested_amount:
+        project.fully_invested = True
+        project.close_date = dt.now()
+    project = await charity_projects_crud.update(
+        project, obj_in, session
     )
-    return charity_project
+    return project
 
 
 @router.delete(

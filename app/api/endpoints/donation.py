@@ -27,7 +27,7 @@ async def get_my_donations(
         user.id,
         session
     )
-    return new_donation
+    return new_donation.all()
 
 
 @router.get(
@@ -53,18 +53,17 @@ async def create_donation(
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_user)
 ):
-    donation_obj = await dontions_crud.create(
+    donation = await dontions_crud.create(
         donation, False, user, session=session
     )
-    open_charity_projects = await charity_projects_crud.get_all_open(
-        session
+    session.add_all(
+        invest(
+            donation,
+            await charity_projects_crud.get_all_open(
+                session
+            )
+        )
     )
-    updated_objects = invest(
-        donation_obj, open_charity_projects
-    )
-    session.add_all(updated_objects)
-    # for donation in updated_charity_objects:
-    #     session.add(donation)
     await session.commit()
-    await session.refresh(donation_obj)
-    return donation_obj
+    await session.refresh(donation)
+    return donation
